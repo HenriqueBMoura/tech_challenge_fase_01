@@ -5,6 +5,7 @@ import Header from "@/components/Layouts/header";
 import Sidebar from "@/components/Layouts/sidebar";
 import TransactionForm from "@/components/TransactionForm";
 import TransactionHistory from "@/components/TransactionHistory";
+import ServicesGrid from "@/components/ServicesGrid";
 
 // Definindo a interface da transação
 interface Transaction {
@@ -88,6 +89,12 @@ export default function Dashboard() {
     setTransactions(prevTransactions => [newTransaction, ...prevTransactions]);
   };
   
+  const handleServiceSelect = (serviceId: string) => {
+    console.log(`Serviço selecionado no Dashboard: ${serviceId}`);
+    // Aqui você pode implementar a lógica para navegar para páginas específicas
+    // de cada serviço ou exibir componentes específicos
+  };
+  
   const handleNavigate = (view: string) => {
     setActiveView(view);
   };
@@ -96,6 +103,15 @@ export default function Dashboard() {
     switch (activeView) {
       case "transaction":
         return <TransactionForm onSubmitTransaction={handleSubmitTransaction} initialBalance={currentBalance} />;
+      case "services":
+        return <ServicesGrid onServiceSelect={handleServiceSelect} />;
+      case "investments":
+        return (
+          <div className="bg-white p-8 rounded-xl shadow-md">
+            <h2 className="text-2xl font-bold mb-6 text-gray-800">Investimentos</h2>
+            <p className="text-gray-600">Funcionalidade de investimentos em desenvolvimento.</p>
+          </div>
+        );
       case "overview":
       default:
         return (
@@ -153,8 +169,15 @@ export default function Dashboard() {
               )}
             </div>
             
-            {/* Componente de Extrato de Transações */}
-            <TransactionHistory transactions={transactions} />
+            {/* O histórico de transações só aparece na visão geral */}
+            {activeView === "overview" && (
+              <TransactionHistory transactions={transactions} />
+            )}
+            
+            {/* Para outras views, podemos expandir o conteúdo principal */}
+            {activeView !== "overview" && (
+              <div className="lg:col-span-1"></div>
+            )}
           </div>
         </main>
       </div>
