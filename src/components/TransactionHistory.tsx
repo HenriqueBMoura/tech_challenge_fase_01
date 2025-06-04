@@ -9,6 +9,7 @@ interface Transaction {
   date: string;
   month: string;
   recipient?: string;
+  category?: string;
 }
 
 interface TransactionHistoryProps {
@@ -16,6 +17,7 @@ interface TransactionHistoryProps {
 }
 
 export default function TransactionHistory({ transactions }: TransactionHistoryProps) {
+  // Se não há transações, não temos última operação
   const lastTransaction = transactions.length > 0 ? transactions[0] : null;
 
   return (
@@ -44,7 +46,16 @@ export default function TransactionHistory({ transactions }: TransactionHistoryP
             <div>
               <p className="font-medium text-gray-800">
                 {lastTransaction.type}
-                {lastTransaction.recipient && <span className="block text-sm text-gray-600">Para: {lastTransaction.recipient}</span>}
+                {lastTransaction.recipient && 
+                  <span className="block text-sm text-gray-600">
+                    Para: {lastTransaction.recipient}
+                  </span>
+                }
+                {lastTransaction.category && 
+                  <span className="block text-sm text-gray-600">
+                    Categoria: {lastTransaction.category}
+                  </span>
+                }
               </p>
               <p className={`text-xl font-bold ${lastTransaction.amount < 0 ? "text-red-600" : "text-green-600"}`}>
                 {lastTransaction.amount < 0 ? "-" : "+"}R$ {Math.abs(lastTransaction.amount).toFixed(2).replace(".", ",")}
@@ -71,7 +82,16 @@ export default function TransactionHistory({ transactions }: TransactionHistoryP
                 <div>
                   <p className="text-gray-800 font-medium">
                     {transaction.type}
-                    {transaction.recipient && <span className="block text-sm text-gray-600">Para: {transaction.recipient}</span>}
+                    {transaction.recipient && 
+                      <span className="block text-sm text-gray-600">
+                        Para: {transaction.recipient}
+                      </span>
+                    }
+                    {transaction.category && 
+                      <span className="block text-sm text-gray-600">
+                        Categoria: {transaction.category}
+                      </span>
+                    }
                   </p>
                   <p className={`text-xl font-bold ${transaction.amount < 0 ? "text-red-600" : "text-gray-800"}`}>
                     {transaction.amount < 0 ? "-" : "+"}R$ {Math.abs(transaction.amount).toFixed(2).replace(".", ",")}
