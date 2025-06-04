@@ -6,6 +6,7 @@ import Sidebar from "@/components/Layouts/sidebar";
 import TransactionForm from "@/components/TransactionForm";
 import TransactionHistory from "@/components/TransactionHistory";
 
+// Definindo a interface da transação
 interface Transaction {
   id: number;
   type: string;
@@ -13,6 +14,7 @@ interface Transaction {
   date: string;
   month: string;
   recipient?: string;
+  category?: string;
 }
 
 export default function Dashboard() {
@@ -26,8 +28,14 @@ export default function Dashboard() {
     { id: 4, type: "Transferência", amount: -500, date: "21/11/2022", month: "Novembro", recipient: "Carlos Silva" },
   ]);
 
-  const handleSubmitTransaction = (type: string, value: string, newBalance: number, recipient?: string) => {
-    console.log("Transaction submitted:", { type, value, newBalance, recipient });
+  const handleSubmitTransaction = (
+    type: string, 
+    value: string, 
+    newBalance: number, 
+    recipient?: string,
+    category?: string
+  ) => {
+    console.log("Transaction submitted:", { type, value, newBalance, recipient, category });
     
     // Atualiza o saldo
     setCurrentBalance(newBalance);
@@ -36,12 +44,14 @@ export default function Dashboard() {
     const numericValue = parseFloat(value.replace(',', '.'));
     const transactionAmount = type === 'deposit' ? numericValue : -numericValue;
     
+    // Obtém a data atual formatada
     const today = new Date();
     const day = today.getDate().toString().padStart(2, '0');
     const month = (today.getMonth() + 1).toString().padStart(2, '0');
     const year = today.getFullYear();
     const formattedDate = `${day}/${month}/${year}`;
     
+    // Meses em português
     const months = [
       "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", 
       "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
@@ -55,13 +65,23 @@ export default function Dashboard() {
       "payment": "Pagamento"
     };
     
+    // Mapeia categorias para rótulos em português
+    const categoryLabels: Record<string, string> = {
+      "bills": "Contas e Faturas",
+      "services": "Serviços",
+      "taxes": "Impostos",
+      "education": "Educação",
+      "other": "Outros"
+    };
+    
     const newTransaction: Transaction = {
       id: Date.now(),
       type: transactionLabels[type] || type,
       amount: transactionAmount,
       date: formattedDate,
       month: monthName,
-      recipient: recipient
+      recipient: recipient, // Para transferências
+      category: category ? categoryLabels[category] : undefined // Para pagamentos
     };
     
     // Adiciona a nova transação à lista
