@@ -29,6 +29,13 @@ export default function Dashboard() {
     { id: 4, type: "Transferência", amount: -500, date: "21/11/2022", month: "Novembro", recipient: "Carlos Silva" },
   ]);
 
+  // Obter a data atual formatada
+  const today = new Date();
+  const options: Intl.DateTimeFormatOptions = { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric' };
+  const formattedDate = today.toLocaleDateString('pt-BR', options);
+  // Transformar primeira letra em maiúscula
+  const formattedDateCapitalized = formattedDate.charAt(0).toUpperCase() + formattedDate.slice(1);
+
   const handleSubmitTransaction = (
     type: string, 
     value: string, 
@@ -99,7 +106,40 @@ export default function Dashboard() {
     setActiveView(view);
   };
 
-  const renderActiveView = () => {
+  // Componente de saldo que será exibido em todas as views
+  const BalanceCard = () => (
+    <div className="bg-primary text-white p-8 rounded-xl shadow-md mb-8">
+      <div className="flex justify-between items-start mb-8">
+        <div>
+          <h1 className="text-3xl font-bold mb-2">Olá, Joana! :)</h1>
+          <p className="text-sm opacity-90">{formattedDateCapitalized}</p>
+        </div>
+      </div>
+      
+      <div className="mt-4">
+        <div className="border-b border-red-hot pb-3 mb-4 flex justify-between items-center">
+          <h2 className="text-xl font-medium">Saldo</h2>
+          <button 
+            onClick={() => setShowBalance(!showBalance)}
+            className="p-2 hover:bg-[#1a6275] rounded-full transition-colors"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+            </svg>
+          </button>
+        </div>
+        <div>
+          <p className="text-sm opacity-80">Conta Corrente</p>
+          <p className="text-3xl font-bold mt-2">
+            {showBalance ? `R$ ${currentBalance.toFixed(2).replace('.', ',')}` : "••••••"}
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderActiveViewContent = () => {
     switch (activeView) {
       case "transaction":
         return <TransactionForm onSubmitTransaction={handleSubmitTransaction} initialBalance={currentBalance} />;
@@ -114,37 +154,7 @@ export default function Dashboard() {
         );
       case "overview":
       default:
-        return (
-          <div className="bg-primary text-white p-8 rounded-xl shadow-md">
-            <div className="flex justify-between items-start mb-8">
-              <div>
-                <h1 className="text-3xl font-bold mb-2">Olá, Joana! :)</h1>
-                <p className="text-sm opacity-90">Quinta-feira, 08/09/2024</p>
-              </div>
-            </div>
-            
-            <div className="mt-4">
-              <div className="border-b border-red-hot pb-3 mb-4 flex justify-between items-center">
-                <h2 className="text-xl font-medium">Saldo</h2>
-                <button 
-                  onClick={() => setShowBalance(!showBalance)}
-                  className="p-2 hover:bg-[#1a6275] rounded-full transition-colors"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                  </svg>
-                </button>
-              </div>
-              <div>
-                <p className="text-sm opacity-80">Conta Corrente</p>
-                <p className="text-3xl font-bold mt-2">
-                  {showBalance ? `R$ ${currentBalance.toFixed(2).replace('.', ',')}` : "••••••"}
-                </p>
-              </div>
-            </div>
-          </div>
-        );
+        return <TransactionForm onSubmitTransaction={handleSubmitTransaction} initialBalance={currentBalance} />;
     }
   };
 
@@ -158,26 +168,19 @@ export default function Dashboard() {
         {/* Main Content */}
         <main className="flex-1 p-8">
           <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Conteúdo principal (2 colunas em telas grandes) */}
             <div className="lg:col-span-2 space-y-8">
-              {renderActiveView()}
+              {/* O componente de saldo sempre aparecerá no topo */}
+              <BalanceCard />
               
-              {activeView === "overview" && (
-                <TransactionForm 
-                  onSubmitTransaction={handleSubmitTransaction} 
-                  initialBalance={currentBalance}
-                />
-              )}
+              {/* O conteúdo específico da view selecionada */}
+              {renderActiveViewContent()}
             </div>
             
-            {/* O histórico de transações só aparece na visão geral */}
-            {activeView === "overview" && (
+            {/* Componente de extrato sempre visível à direita */}
+            <div className="lg:col-span-1">
               <TransactionHistory transactions={transactions} />
-            )}
-            
-            {/* Para outras views, podemos expandir o conteúdo principal */}
-            {activeView !== "overview" && (
-              <div className="lg:col-span-1"></div>
-            )}
+            </div>
           </div>
         </main>
       </div>
