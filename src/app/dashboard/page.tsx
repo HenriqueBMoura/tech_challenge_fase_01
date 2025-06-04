@@ -108,16 +108,16 @@ export default function Dashboard() {
 
   // Componente de saldo que será exibido em todas as views
   const BalanceCard = () => (
-    <div className="bg-primary text-white p-8 rounded-xl shadow-md mb-8">
-      <div className="flex justify-between items-start mb-8">
+    <div className="bg-primary text-white p-8 rounded-xl shadow-md">
+      <div className="flex justify-between items-start mb-6">
         <div>
           <h1 className="text-3xl font-bold mb-2">Olá, Joana! :)</h1>
           <p className="text-sm opacity-90">{formattedDateCapitalized}</p>
         </div>
       </div>
       
-      <div className="mt-4">
-        <div className="border-b border-red-hot pb-3 mb-4 flex justify-between items-center">
+      <div className="mt-2">
+        <div className="border-b border-opacity-20 border-white pb-3 mb-4 flex justify-between items-center">
           <h2 className="text-xl font-medium">Saldo</h2>
           <button 
             onClick={() => setShowBalance(!showBalance)}
@@ -162,27 +162,51 @@ export default function Dashboard() {
     <div className="min-h-screen bg-[#e8f0eb]">
       <Header />
 
-      <div className="flex">
-        <Sidebar onNavigate={handleNavigate} activeView={activeView} />
-
-        {/* Main Content */}
-        <main className="flex-1 p-8">
-          <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Conteúdo principal (2 colunas em telas grandes) */}
-            <div className="lg:col-span-2 space-y-8">
-              {/* O componente de saldo sempre aparecerá no topo */}
-              <BalanceCard />
-              
-              {/* O conteúdo específico da view selecionada */}
-              {renderActiveViewContent()}
-            </div>
-            
-            {/* Componente de extrato sempre visível à direita */}
-            <div className="lg:col-span-1">
-              <TransactionHistory transactions={transactions} />
-            </div>
+      <div className="max-w-7xl mx-auto">
+        <div className="flex py-5">
+          {/* Sidebar com altura ajustada */}
+          <div className="pl-5 self-start sticky top-5">
+            <Sidebar onNavigate={handleNavigate} activeView={activeView} />
           </div>
-        </main>
+
+          {/* Main Content - ajustado para alinhar com a barra lateral */}
+          <main className="flex-1 px-5">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+              {/* Conteúdo principal (2 colunas em telas grandes) */}
+              <div className="lg:col-span-2 space-y-5">
+                {/* O componente de saldo sempre aparecerá no topo */}
+                <BalanceCard />
+                
+                {/* O conteúdo específico da view selecionada */}
+                {renderActiveViewContent()}
+              </div>
+              
+              {/* Componente de extrato sempre visível à direita */}
+              <div className="lg:col-span-1">
+                <div className="bg-white rounded-lg shadow-sm p-5">
+                  <div className="flex justify-between items-center mb-5">
+                    <h2 className="text-2xl font-bold text-gray-800">Extrato</h2>
+                    <div className="flex space-x-2">
+                      <button className="w-10 h-10 bg-primary rounded-full flex items-center justify-center text-white hover:bg-[#003a49] transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                        </svg>
+                      </button>
+                      <button className="w-10 h-10 bg-primary rounded-full flex items-center justify-center text-white hover:bg-[#003a49] transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Conteúdo do extrato com altura ajustada */}
+                  <TransactionHistory transactions={transactions} />
+                </div>
+              </div>
+            </div>
+          </main>
+        </div>
       </div>
     </div>
   );
