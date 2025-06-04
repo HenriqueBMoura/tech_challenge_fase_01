@@ -3,7 +3,7 @@
 import { useState } from "react";
 
 interface TransactionFormProps {
-  onSubmitTransaction: (type: string, value: string, newBalance: number, recipient?: string) => void;
+  onSubmitTransaction: (type: string, value: string, newBalance: number, recipient?: string, category?: string) => void;
   initialBalance?: number;
 }
 
@@ -14,9 +14,11 @@ export default function TransactionForm({
   const [transactionType, setTransactionType] = useState("");
   const [transactionValue, setTransactionValue] = useState("");
   const [recipient, setRecipient] = useState("");
+  const [paymentCategory, setPaymentCategory] = useState("");
   const [balance, setBalance] = useState(initialBalance);
   const [error, setError] = useState("");
   const [showRecipientField, setShowRecipientField] = useState(false);
+  const [showCategoryField, setShowCategoryField] = useState(false);
 
   const formatCurrency = (value: string): string => {
     const cleanValue = value.replace(/[^\d,]/g, '');
@@ -31,8 +33,12 @@ export default function TransactionForm({
   const handleTransactionTypeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const type = e.target.value;
     setTransactionType(type);
+    
     // Mostrar campo de destinatário apenas para transferências
     setShowRecipientField(type === "transfer");
+    
+    // Mostrar campo de categoria apenas para pagamentos
+    setShowCategoryField(type === "payment");
   };
 
   const getNumericValue = (value: string): number => {
@@ -56,6 +62,12 @@ export default function TransactionForm({
       return;
     }
 
+    // Validar categoria para pagamentos
+    if (transactionType === "payment" && paymentCategory.trim() === "") {
+      setError("É necessário informar uma categoria para pagamentos");
+      return;
+    }
+
     let newBalance = balance;
     
     switch(transactionType) {
@@ -75,19 +87,23 @@ export default function TransactionForm({
         return;
     }
 
-    // Passa o destinatário quando for transferência
+    // Passa os parâmetros relevantes conforme o tipo de transação
     onSubmitTransaction(
       transactionType, 
       transactionValue, 
       newBalance,
-      transactionType === "transfer" ? recipient : undefined
+      transactionType === "transfer" ? recipient : undefined,
+      transactionType === "payment" ? paymentCategory : undefined
     );
     
+    // Limpa os campos após envio
     setBalance(newBalance);
     setTransactionType("");
     setTransactionValue("");
     setRecipient("");
+    setPaymentCategory("");
     setShowRecipientField(false);
+    setShowCategoryField(false);
   };
 
   return (
@@ -139,6 +155,26 @@ export default function TransactionForm({
               placeholder="Nome do destinatário"
               required
             />
+          </div>
+        )}
+        
+        {/* Campo de categoria para pagamentos */}
+        {showCategoryField && (
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Categoria</label>
+            <select
+              value={paymentCategory}
+              onChange={(e) => setPaymentCategory(e.target.value)}
+              className="w-full p-4 border border-gray-300 text-black rounded-lg appearance-none bg-white focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+              required
+            >
+              <option value="" disabled>Selecione a categoria</option>
+              <option value="bills">Contas e Faturas</option>
+              <option value="services">Serviços</option>
+              <option value="taxes">Impostos</option>
+              <option value="education">Educação</option>
+              <option value="other">Outros</option>
+            </select>
           </div>
         )}
         
