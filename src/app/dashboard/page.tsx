@@ -32,6 +32,7 @@ export default function Dashboard() {
   ]);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [selectedService, setSelectedService] = useState<string | null>(null);
+  const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
 
   // Obter a data atual formatada
   const today = new Date();
@@ -112,6 +113,28 @@ export default function Dashboard() {
     setActiveView(view);
   };
 
+  const handleDeleteTransaction = (id: number) => {
+    // Filtra as transações, removendo a que tem o id correspondente
+    const transactionToDelete = transactions.find(t => t.id === id);
+    
+    if (transactionToDelete) {
+      // Atualiza o saldo atual após a remoção
+      // Se removeu uma transação com valor negativo, adicionamos esse valor ao saldo
+      // Se removeu uma transação com valor positivo, subtraímos do saldo
+      setCurrentBalance(prev => prev - transactionToDelete.amount);
+      
+      // Remove a transação da lista
+      setTransactions(prevTransactions => 
+        prevTransactions.filter(transaction => transaction.id !== id)
+      );
+    }
+  };
+
+  const handleEditTransaction = (transaction: Transaction) => {
+    setEditingTransaction(transaction);
+    setActiveView("edit-transaction");
+  };
+
   // Componente de saldo que será exibido em todas as views
   const BalanceCard = () => (
     <div className="bg-primary text-white p-8 rounded-xl shadow-md">
@@ -149,6 +172,33 @@ export default function Dashboard() {
     switch (activeView) {
       case "transaction":
         return <TransactionForm onSubmitTransaction={handleSubmitTransaction} initialBalance={currentBalance} />;
+      case "edit-transaction":
+        return editingTransaction ? 
+          <TransactionForm 
+            onSubmitTransaction={(type, value, newBalance, recipient, category) => {
+              // Remove a transação antiga do estado
+              const oldTransaction = transactions.find(t => t.id === editingTransaction.id);
+              if (oldTransaction) {
+                // Reverte o efeito da transação antiga no saldo
+                setCurrentBalance(prev => prev - oldTransaction.amount);
+              }
+              
+              // Chama a função normal de submit para adicionar a nova versão
+              handleSubmitTransaction(type, value, newBalance, recipient, category);
+              
+              // Limpa o estado de edição e volta para a visão geral
+              setEditingTransaction(null);
+              setActiveView("overview");
+            }}
+            initialBalance={currentBalance}
+            editMode={true}
+            transactionToEdit={editingTransaction}
+            onCancelEdit={() => {
+              setEditingTransaction(null);
+              setActiveView("overview");
+            }}
+          /> : 
+          <TransactionForm onSubmitTransaction={handleSubmitTransaction} initialBalance={currentBalance} />;
       case "services":
         return <ServicesGrid onServiceSelect={handleServiceSelect} />;
       case "investments":
@@ -189,22 +239,12 @@ export default function Dashboard() {
                 <div className="bg-white rounded-lg shadow-sm p-5">
                   <div className="flex justify-between items-center mb-5">
                     <h2 className="text-2xl font-bold text-gray-800">Extrato</h2>
-                    <div className="flex space-x-2">
-                      <button className="w-10 h-10 bg-primary rounded-full flex items-center justify-center text-white hover:bg-[#003a49] transition-colors">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                        </svg>
-                      </button>
-                      <button className="w-10 h-10 bg-primary rounded-full flex items-center justify-center text-white hover:bg-[#003a49] transition-colors">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                        </svg>
-                      </button>
-                    </div>
                   </div>
-
-                  {/* Conteúdo do extrato com altura ajustada */}
-                  <TransactionHistory transactions={transactions} />
+                  <TransactionHistory 
+                    transactions={transactions}
+                    onDeleteTransaction={handleDeleteTransaction}
+                    onEditTransaction={handleEditTransaction}
+                  />
                 </div>
               </div>
             </div>

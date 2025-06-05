@@ -1,10 +1,14 @@
 "use client";
 
+import { Transaction } from "@/types";
 import { useState } from "react";
 
 interface TransactionFormProps {
   onSubmitTransaction: (type: string, value: string, newBalance: number, recipient?: string, category?: string) => void;
   initialBalance?: number;
+  editMode?: boolean;
+  transactionToEdit?: Transaction
+  onCancelEdit?: () => void;
 }
 
 export default function TransactionForm({ 
