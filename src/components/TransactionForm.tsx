@@ -301,7 +301,7 @@ export default function TransactionForm({
               id="category"
               value={paymentCategory}
               onChange={(e) => setPaymentCategory(e.target.value)}
-              className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+              className="w-full p-3 border border-gray-300 bg-white text-black rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
             >
               <option value="">Selecione a categoria</option>
               <option value="bills">Contas e Faturas</option>
@@ -348,7 +348,7 @@ export default function TransactionForm({
           <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4 z-10 shadow-xl">
             <div className="text-center mb-6">
               <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-primary bg-opacity-10 mb-4">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-green-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
