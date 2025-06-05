@@ -1,11 +1,12 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from 'react';
-// import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 export default function Header() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
 
   // Função para alternar a visibilidade do dropdown
   const toggleDropdown = () => {
@@ -50,7 +51,7 @@ export default function Header() {
               <div className="py-1">
                 <button
                   onClick={() => {
-                    // Navegar para a página da conta
+                    router.push('/my-account');
                     setIsDropdownOpen(false);
                   }}
                   className="w-full block px-4 py-3 text-left text-green-400 hover:bg-gray-900 border-b border-gray-800"
@@ -60,7 +61,7 @@ export default function Header() {
                 
                 <button
                   onClick={() => {
-                    // Navegar para configurações
+                    router.push('/configuracoes');
                     setIsDropdownOpen(false);
                   }}
                   className="w-full block px-4 py-3 text-left text-white hover:bg-gray-900 border-b border-gray-800"
@@ -70,7 +71,7 @@ export default function Header() {
                 
                 <button
                   onClick={() => {
-                    // Lógica para sair/logout
+                    router.push('/');
                     setIsDropdownOpen(false);
                   }}
                   className="w-full block px-4 py-3 text-left text-white hover:bg-gray-900"
