@@ -2,25 +2,48 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
+import { useState } from 'react';
 
 export default function Home() {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
   return (
     <div className="flex flex-col min-h-screen">
-      <header className="bg-black text-white py-6">
-        <div className="container max-w-7xl  mx-auto px-4 flex justify-between items-center">
-          <div className="flex items-center">
-            <Link href="/" className="flex items-center text-green-500 font-bold text-xl">
+      <header className="bg-black text-white py-4">
+        <div className="container max-w-7xl mx-auto px-4 flex justify-between items-center">
+          {/* Botão do Menu Mobile - Agora à esquerda */}
+          <button 
+            className="md:hidden text-white focus:outline-none"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            aria-label="Toggle menu"
+          >
+            <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              {mobileMenuOpen ? (
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              ) : (
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              )}
+            </svg>
+          </button>
+          
+          {/* Logo - Centralizado para Mobile e à esquerda para Desktop */}
+          <div className="flex items-center md:order-first">
+            <Link href="/" className="flex items-center text-green-500 font-bold text-xl z-10">
               <svg viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6 mr-1">
                 <path d="M3.5,18.5L9.5,12.5L13.5,16.5L22,6.92L20.59,5.5L13.5,13.5L9.5,9.5L2,17L3.5,18.5Z" />
               </svg>
               Bytebank
             </Link>
+            
+            {/* Menu Desktop */}
             <nav className="hidden md:flex ml-10 space-x-8">
               <Link href="/sobre" className="text-white hover:text-green-400 transition">Sobre</Link>
               <Link href="/servicos" className="text-white hover:text-green-400 transition">Serviços</Link>
             </nav>
           </div>
-          <div className="flex space-x-4">
+
+          {/* Botões de CTA - Apenas para Desktop */}
+          <div className="hidden md:flex space-x-4">
             <Link 
               href="/login/signup" 
               className="bg-green-dark hover:bg-green-600 text-white px-4 py-2 rounded-md transition"
@@ -34,17 +57,63 @@ export default function Home() {
               Já tenho conta
             </Link>
           </div>
+          
+          {/* Espaço vazio para balancear o layout em mobile */}
+          <div className="md:hidden w-6"></div>
         </div>
+
+        {/* Menu Mobile Expandido */}
+        {mobileMenuOpen && (
+          <div className="md:hidden bg-black border-t border-gray-800 mt-2 py-4">
+            <div className="container max-w-7xl mx-auto px-4">
+              {/* Botões CTA em Mobile - Dentro do menu hambúrguer */}
+              <div className="flex flex-col space-y-3 mb-6">
+                <Link 
+                  href="/login/signup" 
+                  className="bg-green-500 text-white py-3 px-4 rounded-md text-center font-medium"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Abrir minha conta
+                </Link>
+                <Link 
+                  href="/login/signin" 
+                  className="border border-green-500 text-green-500 bg-transparent py-3 px-4 rounded-md text-center font-medium"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Já tenho conta
+                </Link>
+              </div>
+              
+              {/* Navegação em Mobile */}
+              <nav className="flex flex-col space-y-4">
+                <Link 
+                  href="/sobre" 
+                  className="text-white hover:text-green-400 py-2 border-b border-gray-800 pb-2"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Sobre
+                </Link>
+                <Link 
+                  href="/servicos" 
+                  className="text-white hover:text-green-400 py-2"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Serviços
+                </Link>
+              </nav>
+            </div>
+          </div>
+        )}
       </header>
 
       {/* Hero Section */}
       <section className="bg-gradient-to-b from-[#004D61] to-[#FFFFFF] text-white flex-1">
         <div className="container max-w-7xl mx-auto px-4 py-16 grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
           <div className="flex flex-col items-start text-black">
-            <h1 className="text-4xl md:text-3xl font-bold mb-1 text-left">
+            <h1 className="text-3xl md:text-4xl font-bold mb-1 text-left">
               Experimente mais liberdade no controle da sua vida financeira.
             </h1>
-            <h1 className="text-4xl md:text-3xl font-bold mb-6 text-left">
+            <h1 className="text-3xl md:text-4xl font-bold mb-6 text-left">
               Crie sua conta com a gente!
             </h1>
           </div>
@@ -59,18 +128,17 @@ export default function Home() {
                   height={412}
                   style={{ objectFit: 'contain' }}
                 />
-
               </div>
             </div>
           </div>
         </div>
-      {/* </section> */}
 
       <section className="py-16">
         <div className="container max-w-7xl mx-auto px-4">
           <h2 className="text-black text-3xl font-bold mb-12 text-center">Vantagens do nosso banco:</h2>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {/* Benefits content - unchanged */}
             <div className="flex flex-col items-center text-center">
               <div className="text-green-dark mb-4">
                 <svg viewBox="0 0 24 24" fill="currentColor" className="w-16 h-16">
@@ -101,7 +169,6 @@ export default function Home() {
               <p className="text-gray-subtitle">Você pode acumular pontos com suas compras no crédito sem pagar mensalidade!</p>
             </div>
             
-            {/* Benefit 4 */}
             <div className="flex flex-col items-center text-center">
               <div className="text-green-dark mb-4">
                 <svg viewBox="0 0 24 24" fill="currentColor" className="w-16 h-16">
@@ -141,7 +208,7 @@ export default function Home() {
           
           {/* Brand */}
           <div className="flex flex-col items-start md:items-end">
-            <p className="text-sm text-gray-400 mb-4">Desenvolvido por Alura</p>
+            <p className="text-sm text-gray-400 mb-4">Desenvolvido por Henrique Moura</p>
             <div className="mb-4">
               <Link href="/" className="text-green-500 font-bold text-xl flex items-center">
                 <svg viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6 mr-1">
