@@ -6,6 +6,8 @@ import Sidebar from "@/components/Layouts/sidebar";
 import TransactionForm from "@/components/TransactionForm";
 import TransactionHistory from "@/components/TransactionHistory";
 import ServicesGrid from "@/components/ServicesGrid";
+import Investments from '@/components/Investments';
+import Cards from '@/components/Cards';
 
 // Definindo a interface da transação
 interface Transaction {
@@ -28,6 +30,8 @@ export default function Dashboard() {
     { id: 3, type: "Depósito", amount: 50, date: "21/11/2022", month: "Novembro" },
     { id: 4, type: "Transferência", amount: -500, date: "21/11/2022", month: "Novembro", recipient: "Carlos Silva" },
   ]);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [selectedService, setSelectedService] = useState<string | null>(null);
 
   // Obter a data atual formatada
   const today = new Date();
@@ -98,8 +102,10 @@ export default function Dashboard() {
   
   const handleServiceSelect = (serviceId: string) => {
     console.log(`Serviço selecionado no Dashboard: ${serviceId}`);
-    // Aqui você pode implementar a lógica para navegar para páginas específicas
-    // de cada serviço ou exibir componentes específicos
+    setSelectedService(serviceId);
+    if (serviceId === "cards") {
+      setActiveView("cards"); // Isso vai acionar a renderização do componente Cards
+    }
   };
   
   const handleNavigate = (view: string) => {
@@ -146,12 +152,9 @@ export default function Dashboard() {
       case "services":
         return <ServicesGrid onServiceSelect={handleServiceSelect} />;
       case "investments":
-        return (
-          <div className="bg-white p-8 rounded-xl shadow-md">
-            <h2 className="text-2xl font-bold mb-6 text-gray-800">Investimentos</h2>
-            <p className="text-gray-600">Funcionalidade de investimentos em desenvolvimento.</p>
-          </div>
-        );
+        return <Investments />;
+      case "cards":
+        return <Cards />;
       case "overview":
       default:
         return <TransactionForm onSubmitTransaction={handleSubmitTransaction} initialBalance={currentBalance} />;
