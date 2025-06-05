@@ -37,7 +37,7 @@ export default function Home() {
             
             {/* Menu Desktop */}
             <nav className="hidden md:flex ml-10 space-x-8">
-              <Link href="/sobre" className="text-white hover:text-green-400 transition">Sobre</Link>
+              <Link href="#" className="text-white hover:text-green-400 transition">Sobre</Link>
               <Link href="/servicos" className="text-white hover:text-green-400 transition">Serviços</Link>
             </nav>
           </div>
