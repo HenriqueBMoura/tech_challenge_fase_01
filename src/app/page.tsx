@@ -141,9 +141,13 @@ export default function Home() {
             {/* Benefits content - unchanged */}
             <div className="flex flex-col items-center text-center">
               <div className="text-green-dark mb-4">
-                <svg viewBox="0 0 24 24" fill="currentColor" className="w-16 h-16">
-                  <path d="M22,12V20A2,2 0 0,1 20,22H4A2,2 0 0,1 2,20V12A1,1 0 0,1 1,11V8A2,2 0 0,1 3,6H6.17C6.06,5.69 6,5.35 6,5A3,3 0 0,1 9,2C10,2 10.88,2.5 11.43,3.24V3.23L12,4L12.57,3.23V3.24C13.12,2.5 14,2 15,2A3,3 0 0,1 18,5C18,5.35 17.94,5.69 17.83,6H21A2,2 0 0,1 23,8V11A1,1 0 0,1 22,12M4,20H11V12H4V20M20,20V12H13V20H20M9,4A1,1 0 0,0 8,5A1,1 0 0,0 9,6A1,1 0 0,0 10,5A1,1 0 0,0 9,4M15,4A1,1 0 0,0 14,5A1,1 0 0,0 15,6A1,1 0 0,0 16,5A1,1 0 0,0 15,4M3,8V10H11V8H3M13,8V10H21V8H13Z" />
-                </svg>
+                <Image
+                  src="/landing-page/presente.svg"
+                  alt="Ícone de conta e cartão gratuitos"
+                  width={64}
+                  height={64}
+                  className="w-16 h-16"
+                />
               </div>
               <h3 className="text-green-dark text-lg font-semibold mb-2">Conta e cartão gratuitos</h3>
               <p className="text-gray-600">Isso mesmo, conta 100% digital, tarifa zero e mais que isso: sem tarifa de manutenção.</p>
@@ -151,9 +155,13 @@ export default function Home() {
             
             <div className="text-green-dark flex flex-col items-center text-center">
               <div className="text-green-dark mb-4">
-                <svg viewBox="0 0 24 24" fill="currentColor" className="w-16 h-16">
-                  <path d="M4,4A2,2 0 0,0 2,6V10A2,2 0 0,1 4,12A2,2 0 0,1 2,14V18A2,2 0 0,0 4,20H20A2,2 0 0,0 22,18V14A2,2 0 0,1 20,12A2,2 0 0,1 22,10V6A2,2 0 0,0 20,4H4M4,6H20V8.54C18.76,9.25 18,10.57 18,12C18,13.43 18.76,14.75 20,15.46V18H4V15.46C5.24,14.75 6,13.43 6,12C6,10.57 5.24,9.25 4,8.54V6M15,12A1,1 0 0,0 16,11A1,1 0 0,0 15,10A1,1 0 0,0 14,11A1,1 0 0,0 15,12M18,11A1,1 0 0,0 19,10A1,1 0 0,0 18,9A1,1 0 0,0 17,10A1,1 0 0,0 18,11M18,13A1,1 0 0,0 17,14A1,1 0 0,0 18,15A1,1 0 0,0 19,14A1,1 0 0,0 18,13M15,14A1,1 0 0,0 14,15A1,1 0 0,0 15,16A1,1 0 0,0 16,15A1,1 0 0,0 15,14Z" />
-                </svg>
+                <Image
+                  src="/landing-page/saque.svg"
+                  alt="Ícone de saque sem custo"
+                  width={64}
+                  height={64}
+                  className="w-16 h-16"
+                />
               </div>
               <h3 className="text-green-dark text-lg font-semibold mb-2">Saques sem custo</h3>
               <p className="text-gray-subtitle">Você pode sacar gratuitamente 4x por mês de qualquer Banco 24h.</p>
@@ -161,9 +169,13 @@ export default function Home() {
             
             <div className="flex flex-col items-center text-center">
               <div className="text-green-dark mb-4">
-                <svg viewBox="0 0 24 24" fill="currentColor" className="w-16 h-16">
-                  <path d="M12,17.27L18.18,21L16.54,13.97L22,9.24L14.81,8.62L12,2L9.19,8.62L2,9.24L7.45,13.97L5.82,21L12,17.27Z" />
-                </svg>
+                <Image
+                  src="/landing-page/pontos.svg"
+                  alt="Ícone de programa de pontos"
+                  width={64}
+                  height={64}
+                  className="w-16 h-16"
+                />
               </div>
               <h3 className="text-green-dark text-lg font-semibold mb-2">Programa de pontos</h3>
               <p className="text-gray-subtitle">Você pode acumular pontos com suas compras no crédito sem pagar mensalidade!</p>
@@ -171,9 +183,13 @@ export default function Home() {
             
             <div className="flex flex-col items-center text-center">
               <div className="text-green-dark mb-4">
-                <svg viewBox="0 0 24 24" fill="currentColor" className="w-16 h-16">
-                  <path d="M19,20H4C2.89,20 2,19.1 2,18V6C2,4.89 2.89,4 4,4H20A2,2 0 0,1 22,6V7H10V18H19V20M7.5,13L9,15L7.5,17H4V13H7.5M13,9V7H21V9H13Z" />
-                </svg>
+                <Image
+                  src="/landing-page/dispositivos.svg"
+                  alt="Ícone de seguro para dispositivos"
+                  width={64}
+                  height={64}
+                  className="w-16 h-16"
+                />
               </div>
               <h3 className="text-green-dark text-lg font-semibold mb-2">Seguro Dispositivos</h3>
               <p className="text-gray-subtitle">Seus dispositivos como celular, computador e laptop protegidos por uma mensalidade simbólica.</p>
