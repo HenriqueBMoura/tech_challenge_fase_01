@@ -35,31 +35,16 @@ export default function TransactionForm({
   const [error, setError] = useState("");
   const [showRecipientField, setShowRecipientField] = useState(false);
   const [showCategoryField, setShowCategoryField] = useState(false);
-
-  const formatCurrency = (value: string): string => {
-    const cleanValue = value.replace(/[^\d,]/g, '');
-    return cleanValue;
-  };
-
-  const handleValueChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setTransactionValue(formatCurrency(value));
-  };
-
-  const handleTransactionTypeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const type = e.target.value;
-    setTransactionType(type);
-    
-    // Mostrar campo de destinatário apenas para transferências
-    setShowRecipientField(type === "transfer");
-    
-    // Mostrar campo de categoria apenas para pagamentos
-    setShowCategoryField(type === "payment");
-  };
-
-  const getNumericValue = (value: string): number => {
-    return parseFloat(value.replace(',', '.')) || 0;
-  };
+  
+  // Estado para controlar o modal de confirmação
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [pendingTransactionData, setPendingTransactionData] = useState<{
+    type: string;
+    value: string;
+    newBalance: number;
+    recipient?: string;
+    category?: string;
+  } | null>(null);
 
   // Efeito para preencher o formulário quando estiver em modo de edição
   useEffect(() => {
@@ -84,34 +69,90 @@ export default function TransactionForm({
       
       // Define a categoria se existir
       if (transactionToEdit.category) {
-        setPaymentCategory(transactionToEdit.category);
+        // Mapeia de volta para o valor do select
+        const categoryMap: Record<string, string> = {
+          "Contas e Faturas": "bills",
+          "Serviços": "services",
+          "Impostos": "taxes",
+          "Educação": "education",
+          "Outros": "other"
+        };
+        
+        // Encontra a chave correspondente ao valor da categoria
+        for (const [key, value] of Object.entries(categoryMap)) {
+          if (transactionToEdit.category.includes(key)) {
+            setPaymentCategory(value);
+            break;
+          }
+        }
       }
     }
   }, [editMode, transactionToEdit]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // Função para lidar com mudanças no tipo de transação
+  const handleTypeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newType = e.target.value;
+    setTransactionType(newType);
+    
+    // Atualiza a visibilidade dos campos condicionais
+    setShowRecipientField(newType === "transfer");
+    setShowCategoryField(newType === "payment");
+    
+    // Limpa campos não relevantes
+    if (newType !== "transfer") setRecipient("");
+    if (newType !== "payment") setPaymentCategory("");
+    
+    // Limpa erros
+    setError("");
+  };
+
+  const getNumericValue = (valueString: string): number => {
+    return parseFloat(valueString.replace(',', '.'));
+  };
+
+  // Verifica se o formulário está válido
+  const isFormValid = (): boolean => {
+    // Sempre precisa de um tipo e um valor
+    if (!transactionType || !transactionValue) return false;
+    
+    const numericValue = getNumericValue(transactionValue);
+    if (isNaN(numericValue) || numericValue <= 0) return false;
+    
+    // Se for transferência, precisa de um destinatário
+    if (transactionType === "transfer" && !recipient.trim()) return false;
+    
+    // Se for pagamento, precisa de uma categoria
+    if (transactionType === "payment" && !paymentCategory) return false;
+    
+    // Se não estiver em modo de edição, verifica o saldo para transferências e pagamentos
+    if (!editMode && (transactionType === "transfer" || transactionType === "payment")) {
+      if (numericValue > balance) return false;
+    }
+    
+    return true;
+  };
+
+  // Preparar dados da transação e mostrar modal
+  const prepareSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     
+    if (!isFormValid()) {
+      if (!transactionType) {
+        setError("Por favor, selecione um tipo de transação");
+      } else if (!transactionValue || getNumericValue(transactionValue) <= 0) {
+        setError("O valor da transação deve ser maior que zero");
+      } else if (transactionType === "transfer" && !recipient.trim()) {
+        setError("É necessário informar um destinatário para transferências");
+      } else if (transactionType === "payment" && !paymentCategory) {
+        setError("É necessário informar uma categoria para pagamentos");
+      } else if (!editMode && (transactionType === "transfer" || transactionType === "payment") && getNumericValue(transactionValue) > balance) {
+        setError("Saldo insuficiente para esta operação");
+      }
+      return;
+    }
+
     const numericValue = getNumericValue(transactionValue);
-    
-    if (numericValue <= 0) {
-      setError("O valor da transação deve ser maior que zero");
-      return;
-    }
-
-    // Validar destinatário para transferências
-    if (transactionType === "transfer" && recipient.trim() === "") {
-      setError("É necessário informar um destinatário para transferências");
-      return;
-    }
-
-    // Validar categoria para pagamentos
-    if (transactionType === "payment" && paymentCategory.trim() === "") {
-      setError("É necessário informar uma categoria para pagamentos");
-      return;
-    }
-
     let newBalance = balance;
     
     // Se não estiver editando, calcule o novo saldo
@@ -122,39 +163,65 @@ export default function TransactionForm({
           break;
         case "transfer":
         case "payment":
-          if (numericValue > balance) {
-            setError("Saldo insuficiente para esta operação");
-            return;
-          }
           newBalance = balance - numericValue;
           break;
-        default:
-          setError("Selecione um tipo de transação válido");
-          return;
       }
     } else {
       // Em modo de edição, usamos o saldo atual
       newBalance = balance;
     }
 
-    // Passa os parâmetros relevantes conforme o tipo de transação
-    onSubmitTransaction(
-      transactionType, 
-      transactionValue, 
-      newBalance,
-      transactionType === "transfer" ? recipient : undefined,
-      transactionType === "payment" ? paymentCategory : undefined
-    );
+    // Guarda os dados da transação e abre o modal
+    setPendingTransactionData({
+      type: transactionType,
+      value: transactionValue,
+      newBalance: newBalance,
+      recipient: transactionType === "transfer" ? recipient : undefined,
+      category: transactionType === "payment" ? paymentCategory : undefined
+    });
     
-    // Limpa os campos após envio
-    if (!editMode) {
-      setBalance(newBalance);
-      setTransactionType("");
-      setTransactionValue("");
-      setRecipient("");
-      setPaymentCategory("");
-      setShowRecipientField(false);
-      setShowCategoryField(false);
+    // Abre o modal de confirmação
+    setShowConfirmModal(true);
+  };
+
+  // Confirmar a transação
+  const confirmTransaction = () => {
+    if (pendingTransactionData) {
+      const { type, value, newBalance, recipient, category } = pendingTransactionData;
+      
+      // Executa a submissão da transação
+      onSubmitTransaction(type, value, newBalance, recipient, category);
+      
+      // Limpa os campos após envio se não estiver em modo de edição
+      if (!editMode) {
+        setBalance(newBalance);
+        setTransactionType("");
+        setTransactionValue("");
+        setRecipient("");
+        setPaymentCategory("");
+        setShowRecipientField(false);
+        setShowCategoryField(false);
+      }
+      
+      // Fecha o modal e limpa os dados pendentes
+      setShowConfirmModal(false);
+      setPendingTransactionData(null);
+    }
+  };
+
+  // Cancelar a transação
+  const cancelTransaction = () => {
+    setShowConfirmModal(false);
+    setPendingTransactionData(null);
+  };
+
+  // Função para formatar o texto do tipo de transação
+  const getTransactionTypeText = (type: string): string => {
+    switch (type) {
+      case "deposit": return "depósito";
+      case "transfer": return "transferência";
+      case "payment": return "pagamento";
+      default: return "transação";
     }
   };
 
@@ -174,55 +241,69 @@ export default function TransactionForm({
         </div>
       )}
       
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={prepareSubmit} className="space-y-6">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Tipo de transação</label>
+          <label htmlFor="transactionType" className="block mb-2 text-gray-700 font-medium">
+            Tipo de transação
+          </label>
+          <select
+            id="transactionType"
+            value={transactionType}
+            onChange={handleTypeChange}
+            className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 bg-white text-black focus:ring-primary"
+          >
+            <option value="">Selecione o tipo</option>
+            <option value="deposit">Depósito</option>
+            <option value="transfer">Transferência</option>
+            <option value="payment">Pagamento</option>
+          </select>
+        </div>
+        
+        <div>
+          <label htmlFor="transactionValue" className="block mb-2 text-gray-700 font-medium">
+            Valor
+          </label>
           <div className="relative">
-            <select
-              value={transactionType}
-              onChange={handleTransactionTypeChange}
-              className="w-full p-4 border border-gray-300 text-black rounded-lg appearance-none bg-white focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-              required
-            >
-              <option value="" disabled>Selecione o tipo de transação</option>
-              <option value="deposit">Depósito</option>
-              <option value="transfer">Transferência</option>
-              <option value="payment">Pagamento</option>
-            </select>
-            <div className="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none">
-              <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
-              </svg>
-            </div>
+            <span className="absolute left-3 top-3 text-gray-500">R$</span>
+            <input
+              type="text"
+              id="transactionValue"
+              value={transactionValue}
+              onChange={(e) => setTransactionValue(e.target.value)}
+              placeholder="0,00"
+              className="w-full p-3 pl-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 bg-white text-black focus:ring-primary"
+            />
           </div>
         </div>
         
-        {/* Campo de destinatário para transferências */}
         {showRecipientField && (
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Destinatário</label>
+            <label htmlFor="recipient" className="block mb-2 text-gray-700 font-medium">
+              Destinatário
+            </label>
             <input
               type="text"
+              id="recipient"
               value={recipient}
               onChange={(e) => setRecipient(e.target.value)}
-              className="w-full p-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 bg-white text-black focus:ring-primary focus:border-transparent"
               placeholder="Nome do destinatário"
-              required
+              className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none bg-white text-black focus:ring-2 focus:ring-primary"
             />
           </div>
         )}
         
-        {/* Campo de categoria para pagamentos */}
         {showCategoryField && (
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Categoria</label>
+            <label htmlFor="category" className="block mb-2 text-gray-700 font-medium">
+              Categoria
+            </label>
             <select
+              id="category"
               value={paymentCategory}
               onChange={(e) => setPaymentCategory(e.target.value)}
-              className="w-full p-4 border border-gray-300 text-black rounded-lg appearance-none bg-white focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-              required
+              className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
             >
-              <option value="" disabled>Selecione a categoria</option>
+              <option value="">Selecione a categoria</option>
               <option value="bills">Contas e Faturas</option>
               <option value="services">Serviços</option>
               <option value="taxes">Impostos</option>
@@ -232,24 +313,6 @@ export default function TransactionForm({
           </div>
         )}
         
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Valor</label>
-          <div className="relative">
-            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-              <span className="text-gray-500">R$</span>
-            </div>
-            <input
-              type="text"
-              value={transactionValue}
-              onChange={handleValueChange}
-              className="w-full pl-12 p-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 bg-white text-black focus:ring-primary focus:border-transparent"
-              placeholder="0,00"
-              required
-            />
-          </div>
-        </div>
-        
-        {/* Botões de ação */}
         <div className="flex gap-4">
           {editMode && onCancelEdit && (
             <button
@@ -262,17 +325,97 @@ export default function TransactionForm({
           )}
           <button
             type="submit"
-            className={`bg-primary text-white py-4 px-6 rounded-lg font-medium text-lg hover:bg-[#003a49] transition-colors ${editMode ? 'flex-1' : 'w-full'}`}
+            className={`bg-primary text-white py-4 px-6 rounded-lg font-medium text-lg hover:bg-[#003a49] transition-colors ${editMode ? 'flex-1' : 'w-full'} ${!isFormValid() ? 'opacity-70 cursor-not-allowed' : ''}`}
+            disabled={!isFormValid()}
           >
-            {editMode ? "Salvar alterações" : 
+            {editMode ? "Revisar alterações" : 
              (transactionType ? 
-               `Confirmar ${transactionType === "deposit" ? "depósito" : transactionType === "transfer" ? "transferência" : "pagamento"}` : 
+               `Confirmar ${getTransactionTypeText(transactionType)}` : 
                "Concluir transação"
              )
             }
           </button>
         </div>
       </form>
+
+      {/* Modal de confirmação */}
+      {showConfirmModal && pendingTransactionData && (
+        <div className="fixed inset-0 flex items-center justify-center z-50">
+          {/* Overlay escuro */}
+          <div className="absolute inset-0 bg-black opacity-50" onClick={cancelTransaction}></div>
+          
+          {/* Modal */}
+          <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4 z-10 shadow-xl">
+            <div className="text-center mb-6">
+              <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-primary bg-opacity-10 mb-4">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <h3 className="text-lg leading-6 font-medium text-gray-900 mb-1">
+                {editMode ? "Confirmar alterações" : `Confirmar ${getTransactionTypeText(pendingTransactionData.type)}`}
+              </h3>
+              
+              <div className="mt-4 text-left p-4 bg-gray-50 rounded-lg">
+                <p className="mb-2 text-black font-bold">
+                  <span className="font-medium text-black">Tipo:</span>{" "}
+                  {pendingTransactionData.type === "deposit" ? "Depósito" : 
+                   pendingTransactionData.type === "transfer" ? "Transferência" : 
+                   "Pagamento"}
+                </p>
+                <p className="mb-2 text-gray-700 font-bold">
+                  <span className="font-medium text-black">Valor:</span>{" "}
+                  R$ {pendingTransactionData.value}
+                </p>
+                
+                {pendingTransactionData.recipient && (
+                  <p className="mb-2 text-black font-bold">
+                    <span className="font-medium text-gray-700">Destinatário:</span>{" "}
+                    {pendingTransactionData.recipient}
+                  </p>
+                )}
+                
+                {pendingTransactionData.category && (
+                  <p className="mb-2">
+                    <span className="font-medium text-gray-700">Categoria:</span>{" "}
+                    {pendingTransactionData.category === "bills" ? "Contas e Faturas" :
+                     pendingTransactionData.category === "services" ? "Serviços" :
+                     pendingTransactionData.category === "taxes" ? "Impostos" :
+                     pendingTransactionData.category === "education" ? "Educação" :
+                     "Outros"}
+                  </p>
+                )}
+                
+                {!editMode && (
+                  <p className="mt-4 font-medium">
+                    <span className="text-gray-700">Novo saldo:</span>{" "}
+                    <span className={pendingTransactionData.newBalance < balance ? "text-red-600" : "text-green-600"}>
+                      R$ {pendingTransactionData.newBalance.toFixed(2).replace('.', ',')}
+                    </span>
+                  </p>
+                )}
+              </div>
+            </div>
+            
+            <div className="flex justify-end space-x-3">
+              <button
+                type="button"
+                onClick={cancelTransaction}
+                className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 transition-colors"
+              >
+                Voltar
+              </button>
+              <button
+                type="button"
+                onClick={confirmTransaction}
+                className="px-4 py-2 bg-primary text-white rounded-md hover:bg-[#003a49] transition-colors"
+              >
+                Confirmar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
