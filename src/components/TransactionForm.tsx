@@ -1,19 +1,31 @@
 "use client";
 
-import { Transaction } from "@/types";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+
+interface Transaction {
+  id: number;
+  type: string;
+  amount: number;
+  date: string;
+  month: string;
+  recipient?: string;
+  category?: string;
+}
 
 interface TransactionFormProps {
   onSubmitTransaction: (type: string, value: string, newBalance: number, recipient?: string, category?: string) => void;
   initialBalance?: number;
   editMode?: boolean;
-  transactionToEdit?: Transaction
+  transactionToEdit?: Transaction;
   onCancelEdit?: () => void;
 }
 
 export default function TransactionForm({ 
   onSubmitTransaction, 
-  initialBalance = 2500 
+  initialBalance = 2500,
+  editMode = false,
+  transactionToEdit,
+  onCancelEdit
 }: TransactionFormProps) {
   const [transactionType, setTransactionType] = useState("");
   const [transactionValue, setTransactionValue] = useState("");
@@ -49,6 +61,34 @@ export default function TransactionForm({
     return parseFloat(value.replace(',', '.')) || 0;
   };
 
+  // Efeito para preencher o formulário quando estiver em modo de edição
+  useEffect(() => {
+    if (editMode && transactionToEdit) {
+      // Mapeia o tipo da transação para o valor esperado pelo select
+      let type = "";
+      if (transactionToEdit.type === "Depósito") type = "deposit";
+      else if (transactionToEdit.type === "Transferência") type = "transfer";
+      else if (transactionToEdit.type === "Pagamento") type = "payment";
+      
+      setTransactionType(type);
+      setShowRecipientField(type === "transfer");
+      setShowCategoryField(type === "payment");
+      
+      // Define o valor absoluto da transação (sem o sinal negativo)
+      setTransactionValue(Math.abs(transactionToEdit.amount).toFixed(2).replace(".", ","));
+      
+      // Define o destinatário se existir
+      if (transactionToEdit.recipient) {
+        setRecipient(transactionToEdit.recipient);
+      }
+      
+      // Define a categoria se existir
+      if (transactionToEdit.category) {
+        setPaymentCategory(transactionToEdit.category);
+      }
+    }
+  }, [editMode, transactionToEdit]);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
@@ -74,21 +114,27 @@ export default function TransactionForm({
 
     let newBalance = balance;
     
-    switch(transactionType) {
-      case "deposit":
-        newBalance = balance + numericValue;
-        break;
-      case "transfer":
-      case "payment":
-        if (numericValue > balance) {
-          setError("Saldo insuficiente para esta operação");
+    // Se não estiver editando, calcule o novo saldo
+    if (!editMode) {
+      switch(transactionType) {
+        case "deposit":
+          newBalance = balance + numericValue;
+          break;
+        case "transfer":
+        case "payment":
+          if (numericValue > balance) {
+            setError("Saldo insuficiente para esta operação");
+            return;
+          }
+          newBalance = balance - numericValue;
+          break;
+        default:
+          setError("Selecione um tipo de transação válido");
           return;
-        }
-        newBalance = balance - numericValue;
-        break;
-      default:
-        setError("Selecione um tipo de transação válido");
-        return;
+      }
+    } else {
+      // Em modo de edição, usamos o saldo atual
+      newBalance = balance;
     }
 
     // Passa os parâmetros relevantes conforme o tipo de transação
@@ -101,18 +147,22 @@ export default function TransactionForm({
     );
     
     // Limpa os campos após envio
-    setBalance(newBalance);
-    setTransactionType("");
-    setTransactionValue("");
-    setRecipient("");
-    setPaymentCategory("");
-    setShowRecipientField(false);
-    setShowCategoryField(false);
+    if (!editMode) {
+      setBalance(newBalance);
+      setTransactionType("");
+      setTransactionValue("");
+      setRecipient("");
+      setPaymentCategory("");
+      setShowRecipientField(false);
+      setShowCategoryField(false);
+    }
   };
 
   return (
     <div className="bg-secondary p-8 rounded-xl shadow-md">
-      <h2 className="text-2xl font-bold mb-6 text-gray-800">Nova transação</h2>
+      <h2 className="text-2xl font-bold mb-6 text-gray-800">
+        {editMode ? "Editar transação" : "Nova transação"}
+      </h2>
       
       <div className="mb-4 p-3 bg-gray-100 rounded-lg">
         <p className="text-gray-700">Saldo atual: <span className="font-bold">R$ {balance.toFixed(2).replace('.', ',')}</span></p>
@@ -199,12 +249,29 @@ export default function TransactionForm({
           </div>
         </div>
         
-        <button
-          type="submit"
-          className="bg-primary text-white py-4 px-6 rounded-lg w-full font-medium text-lg hover:bg-[#003a49] transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
-        >
-          {transactionType ? `Confirmar ${transactionType === "deposit" ? "depósito" : transactionType === "transfer" ? "transferência" : "pagamento"}` : "Concluir transação"}
-        </button>
+        {/* Botões de ação */}
+        <div className="flex gap-4">
+          {editMode && onCancelEdit && (
+            <button
+              type="button"
+              onClick={onCancelEdit}
+              className="bg-gray-300 text-gray-700 py-4 px-6 rounded-lg flex-1 font-medium text-lg hover:bg-gray-400 transition-colors"
+            >
+              Cancelar
+            </button>
+          )}
+          <button
+            type="submit"
+            className={`bg-primary text-white py-4 px-6 rounded-lg font-medium text-lg hover:bg-[#003a49] transition-colors ${editMode ? 'flex-1' : 'w-full'}`}
+          >
+            {editMode ? "Salvar alterações" : 
+             (transactionType ? 
+               `Confirmar ${transactionType === "deposit" ? "depósito" : transactionType === "transfer" ? "transferência" : "pagamento"}` : 
+               "Concluir transação"
+             )
+            }
+          </button>
+        </div>
       </form>
     </div>
   );

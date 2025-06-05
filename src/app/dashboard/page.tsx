@@ -177,14 +177,63 @@ export default function Dashboard() {
           <TransactionForm 
             onSubmitTransaction={(type, value, newBalance, recipient, category) => {
               // Remove a transação antiga do estado
-              const oldTransaction = transactions.find(t => t.id === editingTransaction.id);
-              if (oldTransaction) {
-                // Reverte o efeito da transação antiga no saldo
-                setCurrentBalance(prev => prev - oldTransaction.amount);
+              const transactionDate = new Date();
+              const day = transactionDate.getDate().toString().padStart(2, '0');
+              const month = (transactionDate.getMonth() + 1).toString().padStart(2, '0');
+              const formattedDate = `${day}/${month}/${transactionDate.getFullYear()}`;
+              
+              // Mapeia o tipo de transação para o texto a ser exibido
+              let displayType = "";
+              if (type === "deposit") displayType = "Depósito";
+              else if (type === "transfer") displayType = "Transferência";
+              else if (type === "payment") displayType = "Pagamento";
+              
+              // Mapeia a categoria para o texto a ser exibido
+              let displayCategory = category;
+              if (category) {
+                switch (category) {
+                  case "bills": displayCategory = "Contas e Faturas"; break;
+                  case "services": displayCategory = "Serviços"; break;
+                  case "taxes": displayCategory = "Impostos"; break;
+                  case "education": displayCategory = "Educação"; break;
+                  case "other": displayCategory = "Outros"; break;
+                }
               }
               
-              // Chama a função normal de submit para adicionar a nova versão
-              handleSubmitTransaction(type, value, newBalance, recipient, category);
+              // Converte o valor da transação
+              const numericValue = parseFloat(value.replace(',', '.'));
+              
+              // Determina o sinal do valor com base no tipo de transação
+              let transactionAmount = numericValue;
+              if (type === "transfer" || type === "payment") {
+                transactionAmount = -numericValue;
+              }
+              
+              // Removemos a transação antiga do estado
+              setTransactions(prevTransactions => 
+                prevTransactions.filter(t => t.id !== editingTransaction.id)
+              );
+              
+              // Adicionamos a transação atualizada
+              const updatedTransaction = {
+                id: editingTransaction.id, // Mantemos o mesmo ID
+                type: displayType,
+                amount: transactionAmount,
+                date: formattedDate,
+                month: new Intl.DateTimeFormat('pt-BR', { month: 'short' }).format(transactionDate),
+                recipient: recipient,
+                category: displayCategory,
+              };
+              
+              // Adiciona a transação atualizada no topo da lista
+              setTransactions(prevTransactions => [updatedTransaction, ...prevTransactions.filter(t => t.id !== editingTransaction.id)]);
+              
+              // Atualiza o saldo com base na diferença entre o valor original e o novo valor
+              const oldTransaction = transactions.find(t => t.id === editingTransaction.id);
+              if (oldTransaction) {
+                const valueDifference = transactionAmount - oldTransaction.amount;
+                setCurrentBalance(prev => prev + valueDifference);
+              }
               
               // Limpa o estado de edição e volta para a visão geral
               setEditingTransaction(null);
