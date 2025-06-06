@@ -9,7 +9,7 @@ export default function Home() {
 
   return (
     <div className="flex flex-col min-h-screen">
-      <header className="bg-black text-white py-4">
+      <header className="bg-black text-white py-4 relative z-20">
         <div className="container max-w-7xl mx-auto px-4 flex justify-between items-center">
           {/* Botão do Menu Mobile - Agora à esquerda */}
           <button 
@@ -26,7 +26,6 @@ export default function Home() {
             </svg>
           </button>
           
-          {/* Logo - Centralizado para Mobile e à esquerda para Desktop */}
           <div className="flex items-center md:order-first">
             <Link href="/" className="flex items-center text-green-500 font-bold text-xl z-10">
               <svg viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6 mr-1">
@@ -57,33 +56,13 @@ export default function Home() {
               Já tenho conta
             </Link>
           </div>
-          
-          {/* Espaço vazio para balancear o layout em mobile */}
           <div className="md:hidden w-6"></div>
         </div>
 
-        {/* Menu Mobile Expandido */}
+        {/* Menu Mobile Expandido - SEM os botões CTA */}
         {mobileMenuOpen && (
-          <div className="md:hidden bg-black border-t border-gray-800 mt-2 py-4">
-            <div className="container max-w-7xl mx-auto px-4">
-              {/* Botões CTA em Mobile - Dentro do menu hambúrguer */}
-              <div className="flex flex-col space-y-3 mb-6">
-                <Link 
-                  href="/login/signup" 
-                  className="bg-green-500 text-white py-3 px-4 rounded-md text-center font-medium"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  Abrir minha conta
-                </Link>
-                <Link 
-                  href="/login/signin" 
-                  className="border border-green-500 text-green-500 bg-transparent py-3 px-4 rounded-md text-center font-medium"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  Já tenho conta
-                </Link>
-              </div>
-              
+          <div className="md:hidden bg-black border-t border-gray-800 absolute w-full shadow-lg z-10">
+            <div className="container max-w-7xl mx-auto px-4 py-4">
               {/* Navegação em Mobile */}
               <nav className="flex flex-col space-y-4">
                 <Link 
@@ -107,20 +86,17 @@ export default function Home() {
       </header>
 
       {/* Hero Section */}
-      <section className="bg-gradient-to-b from-[#004D61] to-[#FFFFFF] text-white flex-1">
-        <div className="container max-w-7xl mx-auto px-4 py-16 grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
-          <div className="flex flex-col items-start text-black">
-            <h1 className="text-3xl md:text-4xl font-bold mb-1 text-left">
-              Experimente mais liberdade no controle da sua vida financeira.
-            </h1>
-            <h1 className="text-3xl md:text-4xl font-bold mb-6 text-left">
-              Crie sua conta com a gente!
-            </h1>
-          </div>
-          
-          <div className="flex justify-center">
-            <div className="relative w-full h-80 md:h-96">
-              <div className="absolute inset-0 flex items-center justify-center">
+      <section className="bg-gradient-to-b from-[#004D61] to-[#FFFFFF] text-white flex-1 relative z-10">
+        <div className="container max-w-7xl mx-auto px-4 py-16">
+          <div className="flex flex-col lg:grid lg:grid-cols-2 gap-8 items-center">
+            <div className="flex flex-col items-start text-black mb-8 lg:mb-0">
+              <h1 className="text-3xl md:text-4xl font-bold mb-6 text-left">
+                Experimente mais liberdade no controle da sua vida financeira. Crie sua conta com a gente!
+              </h1>
+            </div>
+            
+            <div className="flex justify-center">
+              <div className="relative w-full h-64 md:h-96">
                 <Image 
                   src="/landing-page/ilustracao-banner.svg" 
                   alt="Ilustração de gráfico com pessoa" 
@@ -131,75 +107,91 @@ export default function Home() {
               </div>
             </div>
           </div>
-        </div>
-
-      <section className="py-16">
-        <div className="container max-w-7xl mx-auto px-4">
-          <h2 className="text-black text-3xl font-bold mb-12 text-center">Vantagens do nosso banco:</h2>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {/* Benefits content - unchanged */}
-            <div className="flex flex-col items-center text-center">
-              <div className="text-green-dark mb-4">
-                <Image
-                  src="/landing-page/presente.svg"
-                  alt="Ícone de conta e cartão gratuitos"
-                  width={64}
-                  height={64}
-                  className="w-16 h-16"
-                />
-              </div>
-              <h3 className="text-green-dark text-lg font-semibold mb-2">Conta e cartão gratuitos</h3>
-              <p className="text-gray-600">Isso mesmo, conta 100% digital, tarifa zero e mais que isso: sem tarifa de manutenção.</p>
-            </div>
-            
-            <div className="text-green-dark flex flex-col items-center text-center">
-              <div className="text-green-dark mb-4">
-                <Image
-                  src="/landing-page/saque.svg"
-                  alt="Ícone de saque sem custo"
-                  width={64}
-                  height={64}
-                  className="w-16 h-16"
-                />
-              </div>
-              <h3 className="text-green-dark text-lg font-semibold mb-2">Saques sem custo</h3>
-              <p className="text-gray-subtitle">Você pode sacar gratuitamente 4x por mês de qualquer Banco 24h.</p>
-            </div>
-            
-            <div className="flex flex-col items-center text-center">
-              <div className="text-green-dark mb-4">
-                <Image
-                  src="/landing-page/pontos.svg"
-                  alt="Ícone de programa de pontos"
-                  width={64}
-                  height={64}
-                  className="w-16 h-16"
-                />
-              </div>
-              <h3 className="text-green-dark text-lg font-semibold mb-2">Programa de pontos</h3>
-              <p className="text-gray-subtitle">Você pode acumular pontos com suas compras no crédito sem pagar mensalidade!</p>
-            </div>
-            
-            <div className="flex flex-col items-center text-center">
-              <div className="text-green-dark mb-4">
-                <Image
-                  src="/landing-page/dispositivos.svg"
-                  alt="Ícone de seguro para dispositivos"
-                  width={64}
-                  height={64}
-                  className="w-16 h-16"
-                />
-              </div>
-              <h3 className="text-green-dark text-lg font-semibold mb-2">Seguro Dispositivos</h3>
-              <p className="text-gray-subtitle">Seus dispositivos como celular, computador e laptop protegidos por uma mensalidade simbólica.</p>
-            </div>
+          {/* Botões CTA - Apenas para dispositivos mobile */}
+          <div className="flex flex-col md:hidden justify-center gap-4 mt-8">
+            <Link 
+              href="/login/signup" 
+              className="bg-black text-white py-3 px-6 rounded-md text-center font-medium"
+            >
+              Abrir conta
+            </Link>
+            <Link 
+              href="/login/signin" 
+              className="border border-black text-black bg-transparent py-3 px-6 rounded-md text-center font-medium"
+            >
+              Já tenho conta
+            </Link>
           </div>
         </div>
-      </section>
+
+        <section className="py-16">
+          <div className="container max-w-7xl mx-auto px-4">
+            <h2 className="text-black text-3xl font-bold mb-12 text-center">Vantagens do nosso banco:</h2>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+              {/* Benefits content não modificado */}
+              <div className="flex flex-col items-center text-center">
+                <div className="text-green-dark mb-4">
+                  <Image
+                    src="/landing-page/presente.svg"
+                    alt="Ícone de conta e cartão gratuitos"
+                    width={64}
+                    height={64}
+                    className="w-16 h-16"
+                  />
+                </div>
+                <h3 className="text-green-dark text-lg font-semibold mb-2">Conta e cartão gratuitos</h3>
+                <p className="text-gray-600">Isso mesmo, conta 100% digital, tarifa zero e mais que isso: sem tarifa de manutenção.</p>
+              </div>
+              
+              <div className="text-green-dark flex flex-col items-center text-center">
+                <div className="text-green-dark mb-4">
+                  <Image
+                    src="/landing-page/saque.svg"
+                    alt="Ícone de saque sem custo"
+                    width={64}
+                    height={64}
+                    className="w-16 h-16"
+                  />
+                </div>
+                <h3 className="text-green-dark text-lg font-semibold mb-2">Saques sem custo</h3>
+                <p className="text-gray-subtitle">Você pode sacar gratuitamente 4x por mês de qualquer Banco 24h.</p>
+              </div>
+              
+              <div className="flex flex-col items-center text-center">
+                <div className="text-green-dark mb-4">
+                  <Image
+                    src="/landing-page/pontos.svg"
+                    alt="Ícone de programa de pontos"
+                    width={64}
+                    height={64}
+                    className="w-16 h-16"
+                  />
+                </div>
+                <h3 className="text-green-dark text-lg font-semibold mb-2">Programa de pontos</h3>
+                <p className="text-gray-subtitle">Você pode acumular pontos com suas compras no crédito sem pagar mensalidade!</p>
+              </div>
+              
+              <div className="flex flex-col items-center text-center">
+                <div className="text-green-dark mb-4">
+                  <Image
+                    src="/landing-page/dispositivos.svg"
+                    alt="Ícone de seguro para dispositivos"
+                    width={64}
+                    height={64}
+                    className="w-16 h-16"
+                  />
+                </div>
+                <h3 className="text-green-dark text-lg font-semibold mb-2">Seguro Dispositivos</h3>
+                <p className="text-gray-subtitle">Seus dispositivos como celular, computador e laptop protegidos por uma mensalidade simbólica.</p>
+              </div>
+            </div>
+          </div>
+        </section>
       </section>
 
-      {/* Footer */}
+      {/* Footer permanece o mesmo */}
       <footer className="bg-black text-white py-10">
         <div className="container max-w-7xl mx-auto px-4 grid grid-cols-1 md:grid-cols-3 gap-8">
           {/* Services */}
